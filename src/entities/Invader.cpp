@@ -15,9 +15,8 @@
  *   Alien.cpp c.eated
  */
 
+#include <Invader.hpp>
 #include "config.hpp"
-#include "Alien.hpp"
-
 #include <SDL2/SDL.h>
 
 static const char* g_alien1_data =
@@ -79,8 +78,9 @@ static const char* g_alien3_data =
 
 namespace vdk {
 
-	Alien::Alien( Type t, int x, int y )
-	: m_rect{
+	Invader::Invader( Type t, int x, int y )
+	: m_frantic(false),
+		m_rect{
 			x,
 			y,
 			ENEMY_H,
@@ -108,28 +108,37 @@ namespace vdk {
 			}
 	}
 
-	void Alien::move(int x, int y){
+	void Invader::move(int x, int y){
 		m_rect.x += x;
 		m_rect.y += y;
 		m_bounding_box.x += PIXEL_SIZE * x;
 		m_bounding_box.y += PIXEL_SIZE * y;
 	}
 
-	void Alien::draw( SDL_Renderer* renderer ) const{
+	void Invader::draw( SDL_Renderer* renderer ) const{
 
 		ubyte* data = m_frame_data + (m_frame * ENEMY_H * ENEMY_W);
 
 		SDL_Rect dest;
 
-		int i;
 		for(ubyte* c = data, i = 0; i < (ENEMY_W * ENEMY_H); ++c, ++i){
-			SDL_SetRenderDrawColor(
-				renderer,
-				(*c=='.' ? 255 : 0),
-				(*c=='.' ? 255 : 0),
-				(*c=='.' ? 255 : 0),
-				SDL_ALPHA_OPAQUE
-			);
+			if( !m_frantic ){
+				SDL_SetRenderDrawColor(
+					renderer,
+					(*c=='.' ? 255 : 0),
+					(*c=='.' ? 255 : 0),
+					(*c=='.' ? 255 : 0),
+					SDL_ALPHA_OPAQUE
+				);
+			}else{
+				SDL_SetRenderDrawColor(
+					renderer,
+					(*c=='.' ? 255 : 0),
+					0,
+					0,
+					SDL_ALPHA_OPAQUE
+				);
+			}
 
 			dest.x = ARENA_X + PIXEL_SIZE * (m_rect.x + (int) i % ENEMY_W);
 			dest.y = ARENA_Y + PIXEL_SIZE * (m_rect.y + (int) i / ENEMY_W);
@@ -138,16 +147,17 @@ namespace vdk {
 			SDL_RenderFillRect( renderer, &dest );
 	  }
 
-//		SDL_SetRenderDrawColor( renderer, 255, 0, 0, SDL_ALPHA_OPAQUE );
-//		SDL_RenderDrawRect( renderer, &m_bounding_box );
-
+#ifdef DEBUG
+		SDL_SetRenderDrawColor( renderer, 255, 0, 0, SDL_ALPHA_OPAQUE );
+		SDL_RenderDrawRect( renderer, &m_bounding_box );
+#endif
 	}
 
-	void Alien::update_frame(){
+	void Invader::update_frame(){
 		m_frame = m_frame == 1 ? 0 : 1;
 	}
 
-	bool Alien::is_alive() const{
+	bool Invader::is_alive() const{
 		return true;
 	}
 

@@ -35,17 +35,13 @@ namespace vdk{
 	static const int g_max_ticks = 1000 / g_max_framerate;
 
 	//--------------------------------------------------------------------------
-	// Collision Checkers
-	//--------------------------------------------------------------------------
-
-	//--------------------------------------------------------------------------
 	// Constructor / Destructor
 	//--------------------------------------------------------------------------
 
 	Game::Game()
 		: m_current_state(Game::State::state_game_opening),
 			m_player(g_max_health),
-			m_aliens(1),
+			m_invaders(1),
 			m_score(0),
 			m_highest_score(0),
 			m_counter(0),
@@ -57,9 +53,14 @@ namespace vdk{
 
 		// Lazy-load SDL initializers --------------------------------------------
 
-		init_SDL_Video();
-		init_SDL_ttf();
-		init_SDL_Mixer();
+		int    audio_rate     = 22050;
+		Uint16 audio_format   = AUDIO_S16SYS;
+		int    audio_channels = 2;
+		int    audio_buffers  = 4096;
+
+		SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO );
+		TTF_Init();
+		Mix_OpenAudio( audio_rate, audio_format, audio_channels, audio_buffers );
 
 		// Initialize
 
@@ -92,10 +93,10 @@ namespace vdk{
 
 		// Sound Elements --------------------------------------------------------
 
-		m_sound_invader1 = Mix_LoadWAV("assets/audio/invader1.wav");
-		m_sound_invader2 = Mix_LoadWAV("assets/audio/invader2.wav");
-		m_sound_invader3 = Mix_LoadWAV("assets/audio/invader3.wav");
-		m_sound_invader4 = Mix_LoadWAV("assets/audio/invader4.wav");
+		m_sound_invader1       = Mix_LoadWAV("assets/audio/invader1.wav");
+		m_sound_invader2       = Mix_LoadWAV("assets/audio/invader2.wav");
+		m_sound_invader3       = Mix_LoadWAV("assets/audio/invader3.wav");
+		m_sound_invader4       = Mix_LoadWAV("assets/audio/invader4.wav");
 		m_sound_shoot          = Mix_LoadWAV("assets/audio/shoot.wav");
 		m_sound_death          = Mix_LoadWAV("assets/audio/death.wav");
 		m_sound_invader_killed = Mix_LoadWAV("assets/audio/invaderkilled.wav");
@@ -182,14 +183,13 @@ namespace vdk{
 		rect.w = PIXEL_SIZE * ARENA_SIZE_W;
 		SDL_RenderFillRect(m_renderer, &rect);
 
-		for( Ball& ball : m_projectiles ){
+		for( Projectile& ball : m_projectiles ){
 			ball.draw( m_renderer );
 		}
 
-		m_aliens.draw( m_renderer );
+		m_invaders.draw( m_renderer );
 
 		m_player.draw(m_renderer);
-
 
 		std::stringstream s;
 
@@ -245,7 +245,9 @@ namespace vdk{
 	   SDL_Texture* texture;
 	   SDL_Rect     rect;
 
-	   surface = TTF_RenderText_Solid( m_font, str, FONT_COLOR );
+	   SDL_Color color = {128,128,128};
+
+	   surface = TTF_RenderText_Solid( m_font, str, color );
 	   texture = SDL_CreateTextureFromSurface( m_renderer, surface );
 
 	   // display texture
@@ -269,8 +271,7 @@ namespace vdk{
 			}else if( m_current_state == state_game_paused ){
 				m_current_state = state_game_running;
 			}
-		}
-		else if( m_keys[KEY_ENTER] ){
+		}else if( m_keys[KEY_ENTER] ){
 			if( m_current_state == state_game_opening ){
 				m_current_state = state_game_running;
 			}else if( m_current_state == state_game_over ){
@@ -282,7 +283,7 @@ namespace vdk{
 
 	void Game::reset(){
 		m_level = 1;
-		m_aliens.reset(m_level);
+		m_invaders.reset(m_level);
 		m_player.set_health( g_max_health );
 		m_projectiles.clear();
 		if( m_highest_score < m_score ){
@@ -322,12 +323,14 @@ namespace vdk{
 			m_player.set_velocity( 0,0 );
 		}
 
-		// Check ball collisions
-		ball_collections::iterator it = m_projectiles.begin();
+		// Check projectile collisions
+
+		projectiles_collections::iterator it = m_projectiles.begin();
+
 		while( it != m_projectiles.end() ){
 			bool marked_to_delete = false;
-			Ball& ball = (*it);
-			Rect  bound = ball.get_bounding_box();
+			Projectile& ball = (*it);
+			Rect  bound    = ball.get_bounding_box();
 			Point velocity = ball.get_velocity();
 
 			// Check arena bounce
@@ -361,7 +364,7 @@ namespace vdk{
 				Mix_PlayChannel( -1, m_sound_death, 0 );
 			}
 
-			if( m_aliens.check_collision( &ball ) ){
+			if( m_invaders.check_collision( &ball ) ){
 				m_score += 100 * m_level;
 				marked_to_delete = true;
 				Mix_PlayChannel( -1, m_sound_invader_killed, 0 );
@@ -376,17 +379,17 @@ namespace vdk{
 			}
 		}
 
-		Rect alien_bound = m_aliens.get_bounding_box();
-		Point alien_velocity = m_aliens.get_velocity();
+		Rect alien_bound = m_invaders.get_bounding_box();
+		Point alien_velocity = m_invaders.get_velocity();
 
 		int speed = 25;
-		if( m_aliens.size() == 1 ){
+		if( m_invaders.size() == 1 ){
 			speed = 5;
-		}else if( m_aliens.size() < (m_aliens.max_size() / 4) ){
+		}else if( m_invaders.size() < (m_invaders.max_size() / 4) ){
 			speed = 10;
-		}else if( m_aliens.size() < (m_aliens.max_size() / 3) ){
+		}else if( m_invaders.size() < (m_invaders.max_size() / 3) ){
 			speed = 15;
-		}else if( m_aliens.size() < (m_aliens.max_size() / 2) ){
+		}else if( m_invaders.size() < (m_invaders.max_size() / 2) ){
 			speed = 20;
 		}
 
@@ -406,10 +409,14 @@ namespace vdk{
 
 			m_sound_frame = (m_sound_frame + 1) % 4;
 
-			m_aliens.set_velocity( alien_velocity.x, alien_velocity.y );
-			m_aliens.move( alien_velocity.x, 0 );
+			m_invaders.set_velocity( alien_velocity.x, alien_velocity.y );
+			m_invaders.move( alien_velocity.x, 0 );
+
+			// Always fire if the projectile is empty
+			// Otherwise have 10% chance of firing, as long as below projectile cap
 			if( m_projectiles.empty() || (((rand() % 10) == 0) && (m_projectiles.size() < (size_t)(m_level * 2))) ){
-				m_projectiles.push_back( m_aliens.shoot_projectile() );
+				int speed = std::min(3 + m_level, 8);
+				m_projectiles.push_back( m_invaders.shoot_projectile( speed ) );
 				Mix_PlayChannel( -1, m_sound_shoot, 0 );
 			}
 		}
@@ -417,10 +424,10 @@ namespace vdk{
 		// Check whether the player is alive
 		if( !m_player.is_alive() ){
 			m_current_state = state_game_over;
-		}else if( !m_aliens.is_alive() ){
-			m_player.set_health( m_player.get_health() + m_level ); // regain 'level' health
+		}else if( !m_invaders.is_alive() ){
+			m_player.set_health( m_player.get_health() + m_level*2 ); // regain 'level' health
 			m_level++;
-			m_aliens.reset(m_level);
+			m_invaders.reset(m_level);
 			m_projectiles.clear();
 		}
 
@@ -450,15 +457,7 @@ namespace vdk{
 		static bool enabled = false;
 		if(!enabled){
 		  SDL_Init( SDL_INIT_AUDIO );
-			int audio_rate = 22050;
-			Uint16 audio_format = AUDIO_S16SYS;
-			int audio_channels = 2;
-			int audio_buffers = 4096;
 
-			if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) != 0) {
-				fprintf(stderr, "Unable to initialize audio: %s\n", Mix_GetError());
-				exit(1);
-			}
 
 			enabled = true;
 		}

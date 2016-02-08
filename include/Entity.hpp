@@ -178,8 +178,17 @@ namespace vdk{
 	inline bool check_collision( const Entity* lhs, const Entity* rhs ){
 		if( !lhs->is_alive() || !rhs->is_alive() ) return false;
 
-		const Rect lrect = lhs->get_bounding_box();
-		const Rect rrect = rhs->get_bounding_box();
+		Rect lrect = lhs->get_bounding_box();
+		Point lvel = lhs->get_velocity();
+
+		lrect.w += lvel.x;
+		lrect.h += lvel.y;
+
+		Rect rrect = rhs->get_bounding_box();
+		Point rvel = lhs->get_velocity();
+
+		rrect.w += rvel.x;
+		rrect.h += rvel.y;
 
 		return check_collision( lrect, rrect );
 	}

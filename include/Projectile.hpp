@@ -1,5 +1,5 @@
 /**
- * @file Alien.hpp
+ * @file Ball.hpp
  *
  * @todo Add description
  *
@@ -12,10 +12,10 @@
  * Change Log:
  *
  * Jan 23, 2016: 
- * - Alien.hpp created
+ * - Ball.hpp created
  */
-#ifndef ALIEN_HPP_
-#define ALIEN_HPP_
+#ifndef INCLUDE_PROJECTILE_HPP_
+#define INCLUDE_PROJECTILE_HPP_
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 # pragma once
@@ -23,21 +23,15 @@
 
 #include "Entity.hpp"
 
-namespace vdk {
+namespace vdk{
 
 	////////////////////////////////////////////////////////////////////////////
-	/// @class vdk::Alien
+	/// @class vdk::Projectile
+	///
 	///
 	///
 	////////////////////////////////////////////////////////////////////////////
-	class Alien : public Entity{
-
-		//------------------------------------------------------------------------
-		// Public Members
-		//------------------------------------------------------------------------
-	public:
-
-		enum Type{ alien1, alien2, alien3 };
+	class Projectile : public Entity{
 
 		//------------------------------------------------------------------------
 		// Constructor / Destructor
@@ -45,14 +39,17 @@ namespace vdk {
 	public:
 
 		///
-		/// Constructs a Player character at the center of the screen
+		/// Constructs a Ball given its starting velocity and position
 		///
-		Alien( Type t, int x, int y );
+		/// @param position the starting position of this Ball
+		/// @param velocity the starting velocity of this Ball
+		///
+		Projectile( Point& position, Point& velocity );
 
 		///
-		/// Destructs this Player
 		///
-		virtual ~Alien(){}
+		///
+		virtual ~Projectile(){}
 
 		//------------------------------------------------------------------------
 		// Player API
@@ -73,8 +70,6 @@ namespace vdk {
 		/// @param renderer the renderer to draw to
 		///
 		virtual void draw( SDL_Renderer* renderer ) const;
-
-		void update_frame();
 
 		//------------------------------------------------------------------------
 		// Accessors
@@ -110,9 +105,9 @@ namespace vdk {
 		virtual Point get_location() const;
 
 		///
-		/// @brief Gets the velocity of this moving Player
+		/// @brief Gets the velocity of this moving ball
 		///
-		/// @return The velocity of this Player
+		/// @return The velocity of this Ball
 		///
 		virtual Point get_velocity() const;
 
@@ -136,40 +131,28 @@ namespace vdk {
 		Rect   m_rect;
 		Rect   m_bounding_box;
 		Point  m_velocity;
-		int    m_frame;
-		ubyte* m_frame_data;
 	};
 
-	//--------------------------------------------------------------------------
-	// Inline Definitions
-	//--------------------------------------------------------------------------
-
-	inline Rect Alien::get_rect() const{
+	inline Rect Projectile::get_rect() const{
 		return m_rect;
 	}
 
-	inline Rect Alien::get_bounding_box() const{
+	inline Rect Projectile::get_bounding_box() const{
 		return m_bounding_box;
 	}
 
-	inline Point Alien::get_velocity() const{
+	inline Point Projectile::get_velocity() const{
 		return m_velocity;
 	}
 
-	inline void Alien::set_velocity( int x, int y ){
+	inline void Projectile::set_velocity( int x, int y ){
 		m_velocity.x = x;
 		m_velocity.y = y;
 	}
 
-	inline Point Alien::get_location() const{
-			Point loc;
-			loc.x = m_rect.x;
-			loc.y = m_rect.y;
-			return loc;
-		}
+}
 
 
-}  // namespace vdk
 
 
-#endif /* ALIEN_HPP_ */
+#endif /* INCLUDE_PROJECTILE_HPP_ */

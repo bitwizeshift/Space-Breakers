@@ -31,8 +31,8 @@
 #include "types.hpp"
 #include "Entity.hpp"
 #include "Player.hpp"
-#include "AlienGroup.hpp"
-#include "Ball.hpp"
+#include <InvaderGroup.hpp>
+#include <Projectile.hpp>
 
 #define SDL_MAX_KEY 1000
 
@@ -84,7 +84,7 @@ namespace vdk{
 		~Game();
 
 		///
-		///
+		/// Runs the game
 		///
 		void run();
 
@@ -102,8 +102,14 @@ namespace vdk{
 		///
 		/// @brief Updates all entities in the game
 		///
-		///
 		void update_entities();
+
+		///
+		/// @brief Handles the keyboard input for the game
+		///
+		void handle_input();
+
+		// ------------------------------------------------------------------------
 
 		///
 		/// @brief Draw the screen
@@ -120,7 +126,6 @@ namespace vdk{
 		///
 		void draw_score();
 
-		void handle_input();
 
 		///
 		/// @brief Draws text at the specified coordinates
@@ -158,8 +163,7 @@ namespace vdk{
 		//------------------------------------------------------------------------
 	private:
 
-		typedef std::list<Alien> alien_collection;
-		typedef std::list<Ball>  ball_collections;
+		typedef std::list<Projectile>  projectiles_collections;
 
 		///
 		/// @enum Game::States
@@ -167,10 +171,11 @@ namespace vdk{
 		/// @brief An enumeration of all possible game states
 		///
 		enum State{
-			state_game_opening,//!< game_opening
-			state_game_running,//!< game_running
-			state_game_paused, //!< game_paused
-			state_game_over    //!< game_over
+			state_game_opening,  //!< Opening Menu
+			state_game_highscore,//!< Highscore Menu
+			state_game_running,  //!< Running (normal gameplay)
+			state_game_paused,   //!< Game is paused
+			state_game_over      //!< Game Over menu
 		};
 
 		//------------------------------------------------------------------------
@@ -178,16 +183,15 @@ namespace vdk{
 		SDL_Window*   m_screen;   ///< The SDL window screen
 		SDL_Renderer* m_renderer; ///< The SDL Renderer screen
 		TTF_Font*     m_font;     ///< The font to display
-		Mix_Music*    m_sound;    ///< The SDL Sound data
 
 		//------------------------------------------------------------------------
 
-		Rect     m_dimensions;     ///< The current screen dimensions
-		State    m_current_state;  ///< The current state of this Game
+		Rect  m_dimensions;    ///< The current screen dimensions
+		State m_current_state; ///< The current state of this Game
 
-		Player m_player;   ///< The player entity
-		AlienGroup  m_aliens;   ///< A collection of all entities in the game
-		ball_collections  m_projectiles;
+		Player                   m_player;      ///< The player entity
+		InvaderGroup             m_invaders;    ///< The group of invaders in the game
+		projectiles_collections  m_projectiles; ///< A collection of projectiles
 
 		int m_score;
 		int m_highest_score;
@@ -195,13 +199,13 @@ namespace vdk{
 		int m_level;
 		int m_sound_frame;
 
-		Mix_Chunk* m_sound_invader1;
-		Mix_Chunk* m_sound_invader2;
-		Mix_Chunk* m_sound_invader3;
-		Mix_Chunk* m_sound_invader4;
-		Mix_Chunk* m_sound_shoot;
-		Mix_Chunk* m_sound_death;
-		Mix_Chunk* m_sound_invader_killed;
+		Mix_Chunk* m_sound_invader1; ///< The first alien sound
+		Mix_Chunk* m_sound_invader2; ///< The second alien sound
+		Mix_Chunk* m_sound_invader3; ///< The third alien sound
+		Mix_Chunk* m_sound_invader4; ///< The fourht alien sound
+		Mix_Chunk* m_sound_shoot;    ///< The projectile shoot sound
+		Mix_Chunk* m_sound_death;    ///< The damage sound (destroy wall)
+		Mix_Chunk* m_sound_invader_killed; ///< The space-invaders killed sound
 
 		char m_keys[SDL_MAX_KEY];
 

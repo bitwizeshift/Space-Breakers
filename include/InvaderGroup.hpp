@@ -1,5 +1,5 @@
 /**
- * @file AlienGroup.hpp
+ * @file InvaderGroup.hpp
  *
  * @todo Add description
  *
@@ -12,7 +12,7 @@
  * Change Log:
  *
  * Jan 31, 2016: 
- * - AlienGroup.hpp created
+ * - InvaderGroup.hpp created
  */
 #ifndef ALIENGROUP_HPP_
 #define ALIENGROUP_HPP_
@@ -24,32 +24,40 @@
 #include <list>
 
 #include "Entity.hpp"
-#include "Alien.hpp"
-#include "Ball.hpp"
+#include <Invader.hpp>
+#include <Projectile.hpp>
 
 namespace vdk {
 
-	class AlienGroup{
+	class InvaderGroup{
 
 		//-----------------------------------------------------------------------------
 		// Public Members
 		//-----------------------------------------------------------------------------
 	public:
 
-		typedef std::list<Alien>        alien_column;
-		typedef std::list<alien_column> alien_collection;
+		typedef std::list<Invader>        invader_column;
+		typedef std::list<invader_column> invader_collection;
 
 		//-----------------------------------------------------------------------------
 		// Constructors
 		//-----------------------------------------------------------------------------
 	public:
 
-		AlienGroup( int ranks );
+		///
+		/// @brief Constructs an InvaderGroup with the specified number of ranks
+		///
+		/// @param ranks
+		///
+		InvaderGroup( int ranks );
 
-		virtual ~AlienGroup(){}
+		///
+		/// Destructs the InvaderGroup
+		///
+		virtual ~InvaderGroup(){}
 
 		//------------------------------------------------------------------------
-		// AlienGroup API
+		// InvaderGroup API
 		//------------------------------------------------------------------------
 	public:
 
@@ -68,8 +76,21 @@ namespace vdk {
 		///
 		virtual void draw( SDL_Renderer* renderer ) const;
 
-		bool check_collision( const Ball* entity );
+		///
+		/// Check collisions with projectiles. If a collision occurs, the
+		/// invader at that position is removed from the InvaderGroup and
+		/// the method returns true
+		///
+		/// @param entity the projectile to check collisions with
+		/// @return true if there is a collision
+		///
+		bool check_collision( const Projectile* entity );
 
+		///
+		/// Resets the InvaderGroup with the specified number of ranks
+		///
+		/// @param ranks the number of ranks to reset the group to
+		///
 		void reset(int ranks);
 
 		Rect get_bounding_box() const;
@@ -78,7 +99,7 @@ namespace vdk {
 
 		void set_velocity( int x, int y );
 
-		Ball shoot_projectile();
+		Projectile shoot_projectile( int speed );
 
 		bool is_alive() const;
 
@@ -90,6 +111,10 @@ namespace vdk {
 		// Private Methods
 		//-----------------------------------------------------------------------------
 	private:
+
+		///
+		/// Updates the size of the bounding box of this InvaderGroup
+		///
 		void update_size();
 
 		//-----------------------------------------------------------------------------
@@ -97,18 +122,18 @@ namespace vdk {
 		//-----------------------------------------------------------------------------
 	private:
 
-		alien_collection m_aliens;
+		invader_collection m_invaders;
 		size_t m_size;
 		size_t m_max_size;
 		Rect m_bounding_box;
 		Point m_velocity;
 	};
 
-	inline Point AlienGroup::get_velocity() const{
+	inline Point InvaderGroup::get_velocity() const{
 		return m_velocity;
 	}
 
-	inline Rect AlienGroup::get_bounding_box() const{
+	inline Rect InvaderGroup::get_bounding_box() const{
 		return m_bounding_box;
 	}
 

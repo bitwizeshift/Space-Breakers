@@ -1,5 +1,5 @@
 /**
- * @file Ball.hpp
+ * @file Invader.hpp
  *
  * @todo Add description
  *
@@ -12,10 +12,10 @@
  * Change Log:
  *
  * Jan 23, 2016: 
- * - Ball.hpp created
+ * - Invader.hpp created
  */
-#ifndef INCLUDE_BALL_HPP_
-#define INCLUDE_BALL_HPP_
+#ifndef INVADER_HPP_
+#define INVADER_HPP_
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 # pragma once
@@ -23,15 +23,21 @@
 
 #include "Entity.hpp"
 
-namespace vdk{
+namespace vdk {
 
 	////////////////////////////////////////////////////////////////////////////
-	/// @class vdk::Ball
-	///
+	/// @class vdk::Invader
 	///
 	///
 	////////////////////////////////////////////////////////////////////////////
-	class Ball : public Entity{
+	class Invader : public Entity{
+
+		//------------------------------------------------------------------------
+		// Public Members
+		//------------------------------------------------------------------------
+	public:
+
+		enum Type{ alien1, alien2, alien3 };
 
 		//------------------------------------------------------------------------
 		// Constructor / Destructor
@@ -39,17 +45,14 @@ namespace vdk{
 	public:
 
 		///
-		/// Constructs a Ball given its starting velocity and position
+		/// Constructs a Player character at the center of the screen
 		///
-		/// @param position the starting position of this Ball
-		/// @param velocity the starting velocity of this Ball
-		///
-		Ball( Point& position, Point& velocity );
+		Invader( Type t, int x, int y );
 
 		///
+		/// Destructs this Player
 		///
-		///
-		virtual ~Ball(){}
+		virtual ~Invader(){}
 
 		//------------------------------------------------------------------------
 		// Player API
@@ -70,6 +73,8 @@ namespace vdk{
 		/// @param renderer the renderer to draw to
 		///
 		virtual void draw( SDL_Renderer* renderer ) const;
+
+		void update_frame();
 
 		//------------------------------------------------------------------------
 		// Accessors
@@ -105,9 +110,9 @@ namespace vdk{
 		virtual Point get_location() const;
 
 		///
-		/// @brief Gets the velocity of this moving ball
+		/// @brief Gets the velocity of this moving Player
 		///
-		/// @return The velocity of this Ball
+		/// @return The velocity of this Player
 		///
 		virtual Point get_velocity() const;
 
@@ -115,6 +120,13 @@ namespace vdk{
 		// Mutators
 		//------------------------------------------------------------------------
 	public:
+
+		///
+		/// @brief Sets this Invader as frantic
+		///
+		/// @param frantic
+		///
+		void set_frantic( bool frantic );
 
 		///
 		/// @brief Sets the velocity
@@ -128,31 +140,48 @@ namespace vdk{
 		//------------------------------------------------------------------------
 	private:
 
+		bool   m_frantic;
 		Rect   m_rect;
 		Rect   m_bounding_box;
 		Point  m_velocity;
+		int    m_frame;
+		ubyte* m_frame_data;
 	};
 
-	inline Rect Ball::get_rect() const{
+	//--------------------------------------------------------------------------
+	// Inline Definitions
+	//--------------------------------------------------------------------------
+
+	inline Rect Invader::get_rect() const{
 		return m_rect;
 	}
 
-	inline Rect Ball::get_bounding_box() const{
+	inline Rect Invader::get_bounding_box() const{
 		return m_bounding_box;
 	}
 
-	inline Point Ball::get_velocity() const{
+	inline Point Invader::get_velocity() const{
 		return m_velocity;
 	}
 
-	inline void Ball::set_velocity( int x, int y ){
+	inline void Invader::set_frantic( bool frantic ){
+		m_frantic = frantic;
+	}
+
+	inline void Invader::set_velocity( int x, int y ){
 		m_velocity.x = x;
 		m_velocity.y = y;
 	}
 
-}
+	inline Point Invader::get_location() const{
+			Point loc;
+			loc.x = m_rect.x;
+			loc.y = m_rect.y;
+			return loc;
+		}
 
 
+}  // namespace vdk
 
 
-#endif /* INCLUDE_BALL_HPP_ */
+#endif /* INVADER_HPP_ */
