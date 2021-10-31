@@ -78,7 +78,7 @@ namespace vdk{
 			SDL_WINDOWPOS_CENTERED,
 			WINDOW_SIZE_W,
 			WINDOW_SIZE_H,
-			0
+			SDL_WINDOW_ALLOW_HIGHDPI
 		);
 		// Create the renderer
 		m_renderer = SDL_CreateRenderer(

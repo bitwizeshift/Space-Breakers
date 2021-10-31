@@ -77,7 +77,7 @@
 //----------------------------------------------------------------------------
 
 #define FONT_SIZE 18
-#define FONT_FILE "assets/font.dat"
+#define FONT_FILE "assets/fonts/game-font.ttf"
 #define FONT_COLOR (SDL_Color){128,128,128}
 
 #endif /* CONFIG_HPP_ */
